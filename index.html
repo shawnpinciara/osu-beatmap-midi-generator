@@ -11,16 +11,23 @@
         <button id="saveBeatmap" class = "saveBeatmap">Save beatmap</button>
         <button id="open-partition" class = "open-partition">Open JSON</button>
         <input type="file" id="filereader"/>
+        <br>
+        <textarea id="textarea" rows="4" cols="50">Paste here JSON</textarea>
+        <br>
+        <button id="textarea_button" >LOG textbox</button>
     </body>
     <script>
         //beatmap structure: https://osu.ppy.sh/wiki/it/osu%21_File_Formats/Osu_%28file_format%29#structure
         
 
+        //
+        let json_mid;
         //get the tracks
         const song_title = "title";
         const song_artist = "title";
         const song_difficulty_name = "noobies";
         const song_tags = "tag1 tag2 tag3";
+        const map_creator = "SongShuKuai"
 
         const difficulty_HPDrainRate = 5; //HP setting (0–10)
         const difficulty_CircleSize = 5; //CS setting (0–10)
@@ -35,58 +42,55 @@
         const beatmapSetID = Math.floor(Math.random()*9000000) + 1000000;
         const song_name = "song.mp3"
         let beatmap_head = `osu file format v14\n
-[General]\n
-AudioFilename: songfile.mp3\n
-AudioLeadIn: 0\n
-PreviewTime: -1\n
-Countdown: 0\n
-SampleSet: Soft\n
-StackLeniency: 0.7\n
-Mode: 0\n
-LetterboxInBreaks: 0\n
-WidescreenStoryboard: 0\n
+                            [General]\n
+                            AudioFilename: songfile.mp3\n
+                            AudioLeadIn: 0\n
+                            PreviewTime: -1\n
+                            Countdown: 0\n
+                            SampleSet: Soft\n
+                            StackLeniency: 0.7\n
+                            Mode: 0\n
+                            LetterboxInBreaks: 0\n
+                            WidescreenStoryboard: 0\n
 
-[Editor]\n
-DistanceSpacing: 0.8\n
-BeatDivisor: 1\n
-GridSize: 32\n
-TimelineZoom: 1\n
+                            [Metadata]\n
+                            Title:`+ song_title + `\n
+                            TitleUnicode:`+ song_title + `\n
+                            Artist:`+ song_artist + `\n
+                            ArtistUnicode:`+ song_artist + `\n
+                            Creator:`+ map_creator + `\n
+                            Version:`+ song_difficulty_name + `\n
+                            Source: TV\n
+                            Tags:`+ song_tags + `\n
+                            BeatmapID:`+ beatmapId + `\n
+                            BeatmapSetID:`+ beatmapSetID + `\n
 
-[Metadata]\n
-Title:`+ song_title + `\n
-TitleUnicode:`+ song_title + `\n
-Artist:`+ song_artist + `\n
-ArtistUnicode:`+ song_artist + `\n
-Creator:SongShuKuai\n
-Version:`+ song_difficulty_name + `\n
-Source: TV\n
-Tags:`+ song_tags + `\n
-BeatmapID:`+ beatmapId + `\n
-BeatmapSetID:`+ beatmapSetID + `\n
+                            [Difficulty]\n
+                            HPDrainRate:`+ difficulty_HPDrainRate  + `\n
+                            CircleSize:`+ difficulty_CircleSize + `\n
+                            OverallDifficulty:`+ difficulty_OverallDifficulty + `\n
+                            ApproachRate:`+ difficulty_ApproachRate + `\n
+                            SliderMultiplier:`+ difficulty_SliderMultiplier + `\n
+                            SliderTickRate:`+ difficulty_SliderTickRate + `\n
 
-[Difficulty]\n
-HPDrainRate:`+ difficulty_HPDrainRate  + `\n
-CircleSize:`+ difficulty_CircleSize + `\n
-OverallDifficulty:`+ difficulty_OverallDifficulty + `\n
-ApproachRate:`+ difficulty_ApproachRate + `\n
-SliderMultiplier:`+ difficulty_SliderMultiplier + `\n
-SliderTickRate:`+ difficulty_SliderTickRate + `\n
+                            [TimingPoints] \n
+                            `+ beatmap_body  + `\n 
+                             `;
 
-[Events]\n
-0,0,`+ events_backgroundImage + `,0,0 //0,0,filename,xOffset,yOffset \n
-//0,startTime,filename,xOffset,yOffset //for videos\n
-//2,startTime,endTime //for breaks (pause in mezzo alla canzone)\n
-//Storyboard Layer 1 (Fail)\n
-//Storyboard Layer 2 (Pass)\n
-//Storyboard Layer 3 (Foreground)\n
-//Storyboard Layer 4 (Overlay)\n
-//Storyboard Sound Samples\n `;
+                            //  [Events]\n
+                            // 0,0,`+ events_backgroundImage + `,0,0 //0,0,filename,xOffset,yOffset \n
+                            // //0,startTime,filename,xOffset,yOffset //for videos\n
+                            // //2,startTime,endTime //for breaks (pause in mezzo alla canzone)\n
+                            // //Storyboard Layer 1 (Fail)\n
+                            // //Storyboard Layer 2 (Pass)\n
+                            // //Storyboard Layer 3 (Foreground)\n
+                            // //Storyboard Layer 4 (Overlay)\n
+                            // //Storyboard Sound Samples\n `;
 
-        let beatmap_body = `[TimingPoints]\n
-// https://osu.ppy.sh/wiki/it/osu%21_File_Formats/Osu_%28file_format%29#timing-points
-//time,beatLength,meter,sampleSet,sampleIndex,volume,uninherited,effects
-"startin","timeperframe",4,2,0,100,1,0\n `;
-
+                            //         let beatmap_body = `[TimingPoints]\n
+                            // // https://osu.ppy.sh/wiki/it/osu%21_File_Formats/Osu_%28file_format%29#timing-points
+                            // //time,beatLength,meter,sampleSet,sampleIndex,volume,uninherited,effects
+                            // "startin","timeperframe",4,2,0,100,1,0\n
     // // (A) CREATE BLOB OBJECT
     // var myBlob = new Blob([beatmap_head], {type: 'text/plain'});
 
@@ -132,15 +136,25 @@ SliderTickRate:`+ difficulty_SliderTickRate + `\n
         $('.files').trigger('click');
     })
 
-    document.getElementById('files').addEventListener(  //json reader
-        'change',  
-        changeEvent => { 
-            changeEvent.stopPropagation(); 
-            changeEvent.preventDefault(); 
-            readJsonFile(changeEvent.target.files[0]); 
-        }, 
-        false 
-    );
+    $('#textarea_button').click(function() {
+        console.log($('#textarea').val());
+        json_mid = JSON.parse($('#textarea').val());
+    })
+
+    // document.getElementById('files').addEventListener(  //json reader
+    //     'change',  
+    //     changeEvent => { 
+    //         changeEvent.stopPropagation(); 
+    //         changeEvent.preventDefault(); 
+    //         readJsonFile(changeEvent.target.files[0]); 
+    //     }, 
+    //     false 
+    // );
+
+    function json_to_osu(json_in) {
+
+        return osu_out;
+    }
 
     function readJsonFile(jsonFile) { 
         var reader = new FileReader(); 
